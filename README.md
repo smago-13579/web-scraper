@@ -1,5 +1,4 @@
-Install PostgreSQL database adapter for Python
-
+### Install PostgreSQL database adapter for Python
 ```bash
 pip install psycopg
 
@@ -7,4 +6,12 @@ pip install psycopg
 python -m pip install --force-reinstall "psycopg[binary]"
 ```
 
+### Install third-party HTTP library:
+```bash
+pip install requests
+```
 
+### Install fake-useragent (web browser User-Agent)
+```bash
+pip install fake-useragent
+```
