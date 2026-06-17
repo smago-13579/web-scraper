@@ -33,7 +33,8 @@ def save_all_data(data: List[dict]):
                 # Используем именованные плейсхолдеры, совпадающие с ключами словаря
                 query = """
                         INSERT INTO public.vacancies (vacancy_id, title, url)
-                        VALUES (%(vacancyId)s, %(title)s, %(url)s);
+                        VALUES (%(vacancyId)s, %(title)s, %(url)s)
+                        ON CONFLICT (vacancy_id) DO NOTHING;
                         """
 
                 # В ЭТОТ МОМЕНТ база данных начинает транзакцию и выполняет в ней все вставки из списка.
@@ -46,23 +47,25 @@ def save_all_data(data: List[dict]):
         print(e)
 
 
-def get_processed_vacancies(ids: List[int]) -> List[int]:
-    """Возвращает список вакансий который уже были обработаны"""
+def find_new_vacancies(vacancies: List[dict]) -> List[dict]:
+    """Проверяет список вакансий который уже были обработаны и возвращает только новые вакансии"""
     try:
-        if not ids:
-            return []
+        if not vacancies:
+            return vacancies
+        ids = [x.get("vacancyId") for x in vacancies]
+        processed_data = []
 
         with psycopg.connect(DB_URL) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT vacancy_id FROM public.vacancies WHERE vacancy_id = ANY(%s);",(ids, ))
 
                 rows = cur.fetchall()
-                data = []
                 for row in rows:
                     vacancyId = row[0]
-                    data.append(vacancyId)
+                    processed_data.append(vacancyId)
 
-                return data
+        vacancies = [x for x in vacancies if x.get("vacancyId") not in processed_data]
+        return vacancies
     except Exception as e:
         print(e)
         return []

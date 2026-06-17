@@ -15,3 +15,8 @@ pip install requests
 ```bash
 pip install fake-useragent
 ```
+
+### Install OpenAI
+```bash
+pip install openai
+```
