@@ -1,0 +1,21 @@
+
+services:
+  # Наш основной сервис анализа вакансий
+  web_scraper:
+    build: .
+    container_name: web-scraper
+    image: web-scraper-image
+    env_file:
+      - .env
+    environment:
+      - LLM_BASE_URL=http://host.docker.internal:11434/v1
+    restart: always
+    networks:
+      - local-network
+    extra_hosts: # для доступа к LLM модели
+      - "host.docker.internal:host-gateway"
+
+networks:
+  local-network:
+    name: local-network
+    driver: bridge

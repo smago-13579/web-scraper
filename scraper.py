@@ -1,7 +1,8 @@
 import os
 import time
-
+import schedule
 import requests
+
 from fake_useragent import UserAgent
 
 from ai_assistant import analyze_vacancy_local_ollama
@@ -14,7 +15,7 @@ load_dotenv()
 
 RESPONSE_FILENAME = os.environ.get("HH_RESPONSE_FILENAME", "hh_response.txt")
 RESUME = open('rs.txt', 'r').read()
-STOP_FACTORS = ["Вакансия для тестировщика (QA, Тестирование, Тестировщик)", "В вакансии не указан фреймворк Spring",
+STOP_FACTORS = ["Вакансия для тестировщика (QA Engineer, Тестирование, Тестировщик)", "В вакансии НЕ указан фреймворк Spring",
                 "Вакансия НЕ для Java бэкенд разработчика"]
 
 def get_headers() -> dict:
@@ -31,7 +32,7 @@ def get_headers() -> dict:
     }
 
 
-def collect_java_vacancies(max_pages:int = 15):
+def collect_java_vacancies(max_pages:int = 10):
     """Собирает ссылки и названия свежих вакансий за последние сутки"""
     base_url = "https://hh.ru/search/vacancy"
 
@@ -56,7 +57,7 @@ def collect_java_vacancies(max_pages:int = 15):
             # Делаем запрос с фальшивыми заголовками реального пользователя
             response = session.get(base_url, params=params, headers=get_headers(), timeout=10)
 
-            time.sleep(10)
+            time.sleep(5)
             if response.status_code == 403:
                 print("Ошибка 403: Доступ заблокирован hh.ru (включилась защита Cloudflare/Капча).")
                 continue
@@ -90,7 +91,7 @@ def parse_vacancy_description(url: str) -> str:
     return extract_description_from_content(response.text)
 
 
-def main():
+def main_job():
     print("Запуск парсера свежих Java-вакансий...")
     collect_java_vacancies()
 
@@ -125,6 +126,14 @@ def main():
         except Exception as e:
             print(f"Произошла ошибка при получении описания вакансии {vacancy.get('title')}: {e}")
 
+def main():
+    # Настраиваем интервал
+    schedule.every(5).minutes.do(main_job)
+    print("Планировщик запущен. Ожидание задач...")
+
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
 
 if __name__ == "__main__":
     main()

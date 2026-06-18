@@ -1,10 +1,14 @@
 import json
+import os
+
 from openai import OpenAI
 
 # 1. Настраиваем клиента на локальный сервер Ollama
 # По умолчанию Ollama работает на порту 11434
+LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:11434/v1")
+
 client = OpenAI(
-    base_url="http://localhost:11434/v1",
+    base_url=LLM_BASE_URL,
     api_key="ollama"  # Сюда можно вписать любую строку, Ollama её проигнорирует
 )
 

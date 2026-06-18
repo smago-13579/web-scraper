@@ -25,3 +25,13 @@ pip install openai
 ```bash
 pip install python-dotenv
 ```
+
+### Intall schedule library
+```bash
+pip install schedule
+```
+
+### Create requirements.txt for docker
+```bash
+pip freeze > requirements.txt
+```
