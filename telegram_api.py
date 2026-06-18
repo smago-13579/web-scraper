@@ -1,9 +1,13 @@
 import os
 import requests
 
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "-5345606407")
-BOT_ID = os.environ.get("TELEGRAM_BOT_ID", "8962942688:AAF-r7D7pOi1myAxyir88JO2xYXfcc_hVZ8")
-PROXY_URL = os.environ.get("PROXY_URL", "rapid-wind-29c8.sultan-13579.workers.dev")
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+BOT_ID = os.environ.get("TELEGRAM_BOT_TOKEN")
+PROXY_URL = os.environ.get("PROXY_URL")
 URL = "https://{}/bot{}/sendMessage".format(PROXY_URL, BOT_ID)
 
 def send_message(title: str, address: str) -> bool:

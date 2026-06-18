@@ -10,3 +10,6 @@
 /dataSources.local.xml
 /.idea/**
 .DS_Store
+**/.env
+**/hh_response.txt
+**/rs.txt

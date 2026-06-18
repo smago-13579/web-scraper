@@ -8,6 +8,9 @@ from ai_assistant import analyze_vacancy_local_ollama
 from pg_queries import save_all_data, find_new_vacancies
 from process_hh import extract_vacancies_from_file, extract_description_from_content
 from telegram_api import send_message
+from dotenv import load_dotenv
+
+load_dotenv()
 
 RESPONSE_FILENAME = os.environ.get("HH_RESPONSE_FILENAME", "hh_response.txt")
 RESUME = open('rs.txt', 'r').read()
@@ -28,7 +31,7 @@ def get_headers() -> dict:
     }
 
 
-def collect_java_vacancies(max_pages=20):
+def collect_java_vacancies(max_pages:int = 15):
     """Собирает ссылки и названия свежих вакансий за последние сутки"""
     base_url = "https://hh.ru/search/vacancy"
 

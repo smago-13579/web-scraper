@@ -20,3 +20,8 @@ pip install fake-useragent
 ```bash
 pip install openai
 ```
+
+### Intall python-dotenv to read from file .env
+```bash
+pip install python-dotenv
+```
