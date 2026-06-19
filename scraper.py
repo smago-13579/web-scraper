@@ -126,6 +126,7 @@ def main_job():
         except Exception as e:
             print(f"Произошла ошибка при получении описания вакансии {vacancy.get('title')}: {e}")
 
+
 def main():
     # Настраиваем интервал
     schedule.every(5).minutes.do(main_job)
@@ -134,6 +135,7 @@ def main():
     while True:
         schedule.run_pending()
         time.sleep(30)
+
 
 if __name__ == "__main__":
     main()
