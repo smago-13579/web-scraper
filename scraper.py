@@ -16,7 +16,7 @@ load_dotenv()
 RESPONSE_FILENAME = os.environ.get("HH_RESPONSE_FILENAME", "hh_response.txt")
 RESUME = open('rs.txt', 'r').read()
 STOP_FACTORS = ["Вакансия для тестировщика (QA Engineer, Тестирование, Тестировщик)", "В вакансии НЕ указан фреймворк Spring",
-                "Вакансия НЕ для Java бэкенд разработчика"]
+                "Вакансия НЕ в России", "Вакансия НЕ для Java бэкенд разработчика"]
 
 def get_headers() -> dict:
     """Генерирует реалистичные заголовки для обхода базовой защиты hh.ru"""
@@ -116,7 +116,7 @@ def main_job():
             if not description:
                 continue
 
-            description = vacancy.get('title') + '\n' + description
+            description = vacancy.get('title', '') + '\n' + description
             review = analyze_vacancy_local_ollama(RESUME, description, STOP_FACTORS)
             print(review)
 

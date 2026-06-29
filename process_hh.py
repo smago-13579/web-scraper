@@ -41,7 +41,7 @@ def extract_description_from_content(html_content: str) -> str:
 
 def main():
     # Имя сохраненного текстового файла
-    # file_name = "hh_response.txt" //todo delete filename
+    file_name = "hh_response.txt"
 
     print(f"Анализируем файл {file_name}...")
     vacancies = extract_vacancies_from_file(file_name)
