@@ -15,8 +15,11 @@ load_dotenv()
 
 RESPONSE_FILENAME = os.environ.get("HH_RESPONSE_FILENAME", "hh_response.txt")
 RESUME = open('rs.txt', 'r').read()
-STOP_FACTORS = ["Вакансия для тестировщика (QA Engineer, Тестирование, Тестировщик)", "В вакансии НЕ указан фреймворк Spring",
-                "Вакансия НЕ в России", "Вакансия НЕ для Java бэкенд разработчика"]
+STOP_FACTORS = ["Вакансия для тестировщика (QA Engineer, Тестирование, Тестировщик)",
+                "В вакансии НЕ указан фреймворк Spring",
+                "Вакансия НЕ для Java бэкенд разработчика"]
+cities = ["Санкт-Петербург", "Москва"]
+
 
 def get_headers() -> dict:
     """Генерирует реалистичные заголовки для обхода базовой защиты hh.ru"""
@@ -75,18 +78,18 @@ def collect_java_vacancies(max_pages:int = 10):
 
     print(f"Тело ответа записано в файл {RESPONSE_FILENAME}")
 
-def parse_vacancy_description(url: str) -> str:
+def parse_vacancy_description(url: str) -> list[str]:
     """Запрашивает и парсит описание вакансии"""
     session = requests.Session()
     response = session.get(url, headers=get_headers(), timeout=10)
 
     if response.status_code == 403:
         print("Ошибка 403: Доступ заблокирован hh.ru (включилась защита Cloudflare/Капча).")
-        return ''
+        return []
 
     if response.status_code != 200:
         print(f"Ошибка получения страницы: статус {response.status_code}")
-        return ''
+        return []
 
     return extract_description_from_content(response.text)
 
@@ -110,17 +113,17 @@ def main_job():
 
     for vacancy in vacancies:
         try:
-            description = parse_vacancy_description(vacancy.get('url', ''))
+            data = parse_vacancy_description(vacancy.get('url', ''))
 
-            time.sleep(5)
-            if not description:
+            time.sleep(3)
+            if len(data) == 0 or (len(data) > 1 and data[1] not in cities):
                 continue
 
-            description = vacancy.get('title', '') + '\n' + description
+            description = vacancy.get('title', '') + '\n' + data[0]
             review = analyze_vacancy_local_ollama(RESUME, description, STOP_FACTORS)
             print(review)
 
-            if review.get('relevance_percentage', 0) >= 50:
+            if review.get('should_apply', True) and review.get('relevance_percentage', 0) >= 50:
                 send_message(vacancy.get('title', ''), vacancy.get('url', ''))
 
         except Exception as e:

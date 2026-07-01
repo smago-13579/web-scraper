@@ -28,15 +28,20 @@ def extract_vacancies_from_file(file_path: str)-> List[dict]:
         return []
 
 
-def extract_description_from_content(html_content: str) -> str:
+def extract_description_from_content(html_content: str) -> List[str]:
     """Извлекает описание вакансии из html"""
     try:
+        city = re.findall(r'"addressLocality"\s*:\s*"([^"]+)"', html_content)
         description = re.findall(r'data-qa="vacancy-description"><p>(.+?)</div></div>',
                                  html_content, flags=re.DOTALL)
-        return description[0]
+        data = [description[0]]
+
+        if city:
+            data.append(city[0])
+        return data
     except Exception as e:
         print(f"Ошибка при поиске описания вакансии: {e}")
-        return ''
+        return []
 
 
 def main():
