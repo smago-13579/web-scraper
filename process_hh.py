@@ -2,6 +2,7 @@ import re
 import json
 
 from typing import List
+from bs4 import BeautifulSoup
 
 
 def extract_vacancies_from_file(file_path: str)-> List[dict]:
@@ -10,8 +11,14 @@ def extract_vacancies_from_file(file_path: str)-> List[dict]:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        ids = re.findall(r'"vacancyId"\s*:\s*(\d+)', content)
-        names = re.findall(r'"vacancyId":\d+,"name"\s*:\s*"([^"]+)"', content)
+        # То что закомментировано ниже, устарело
+        # ids = re.findall(r'"vacancyId"\s*:\s*(\d+)', content)
+        # names = re.findall(r'"vacancyId":\d+,"name"\s*:\s*"([^"]+)"', content)
+        ids = re.findall(r'div id="(\d+)"\s*class="vacancy-card', content)
+
+        soup = BeautifulSoup(content, "html.parser")
+        elements = soup.find_all("span", {'data-qa': 'serp-item__title-text'})
+        names = [name.getText(strip=True) for name in elements]
 
         extracted_list = []
 

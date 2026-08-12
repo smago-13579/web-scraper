@@ -2,11 +2,8 @@ import os
 import psycopg
 
 from typing import List
-from dotenv import load_dotenv
 
-load_dotenv()
-
-DB_URL = os.environ.get("DATABASE_URL")
+DB_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/hh")
 
 def save_data(vacancyId: int, title: str, url: str):
     """Открывает соединение и сохраняет запись в БД. Закрывает соединение после завершения операции"""

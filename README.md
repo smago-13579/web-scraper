@@ -31,6 +31,11 @@ pip install python-dotenv
 pip install schedule
 ```
 
+### Intall BeautifulSoup library
+```bash
+pip install beautifulsoup4
+```
+
 ### Create requirements.txt for docker
 ```bash
 pip freeze > requirements.txt
