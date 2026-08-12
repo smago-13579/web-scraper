@@ -1,19 +1,39 @@
-
 services:
   # Наш основной сервис анализа вакансий
   web_scraper:
-    build: .
+    build:
+      dockerfile: Dockerfile
     container_name: web-scraper
     image: web-scraper-image
     env_file:
       - .env
     environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hh
       - LLM_BASE_URL=http://host.docker.internal:11434/v1
     restart: always
     networks:
       - local-network
     extra_hosts: # для доступа к LLM модели
       - "host.docker.internal:host-gateway"
+
+  # БД PostgreSQL
+  postgres-db:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=hh
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    networks:
+      - local-network
 
 networks:
   local-network:
