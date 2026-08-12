@@ -6,7 +6,7 @@ import requests
 from fake_useragent import UserAgent
 
 from ai_assistant import analyze_vacancy_local_ollama
-from pg_queries import save_all_data, find_new_vacancies
+from pg_queries import save_all_data, find_new_vacancies, run_database_migrations
 from process_hh import extract_vacancies_from_file, extract_description_from_content
 from telegram_api import send_message
 from dotenv import load_dotenv
@@ -131,6 +131,8 @@ def main_job():
 
 
 def main():
+    run_database_migrations()
+
     # Настраиваем интервал
     schedule.every(5).minutes.do(main_job)
     print("Планировщик запущен. Ожидание задач...")

@@ -9,6 +9,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hh
+      - MIGRATIONS_URL=postgresql+psycopg://postgres:postgres@postgres:5432/hh
       - LLM_BASE_URL=http://host.docker.internal:11434/v1
     restart: always
     networks:

@@ -2,8 +2,10 @@ import os
 import psycopg
 
 from typing import List
+from yoyo import read_migrations, get_backend
 
 DB_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/hh")
+MG_DB_URL = os.environ.get("MIGRATIONS_URL", "postgresql+psycopg://postgres:postgres@localhost:5432/hh")
 
 def save_data(vacancyId: int, title: str, url: str):
     """Открывает соединение и сохраняет запись в БД. Закрывает соединение после завершения операции"""
@@ -69,6 +71,35 @@ def find_new_vacancies(vacancies: List[dict]) -> List[dict]:
     except Exception as e:
         print(e)
         return []
+
+
+def run_database_migrations():
+    """Применяет миграции к базе данных PostgreSQL"""
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    migrations_dir = os.path.join(current_dir, "migrations")
+
+    print("Проверка и запуск миграций базы данных...")
+
+    try:
+        backend = get_backend(MG_DB_URL)
+
+        # Читаем все файлы миграций из папки
+        migrations = read_migrations(migrations_dir)
+
+        # Блокируем БД чтобы параллельные процессы не запускали миграции одновременно
+        with backend.lock():
+            unapplied = backend.to_apply(migrations)
+
+            if unapplied:
+                backend.apply_migrations(unapplied)
+                print(f"Успешно применено миграций: {len(unapplied)}")
+            else:
+                print("База данных уже в актуальном состоянии. Новых миграций нет.")
+
+    except Exception as e:
+        print(f"Ошибка при выполнении миграций: {e}")
+        raise SystemExit(1)
 
 
 def main():
