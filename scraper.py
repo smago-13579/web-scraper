@@ -2,6 +2,7 @@ import os
 import time
 import schedule
 import requests
+import datetime
 
 from fake_useragent import UserAgent
 
@@ -14,7 +15,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 RESPONSE_FILENAME = os.environ.get("HH_RESPONSE_FILENAME", "hh_response.txt")
-RESUME = open('rs.txt', 'r').read()
+
+FP = os.environ.get('FILE_PATH', 'rs.txt')
+RESUME = open(FP, 'r').read() if os.path.isfile(FP) else ''
+
 STOP_FACTORS = ["Вакансия для тестировщика (QA Engineer, Тестирование, Тестировщик)",
                 "В вакансии НЕ указан фреймворк Spring",
                 "Вакансия НЕ для Java бэкенд разработчика"]
@@ -95,21 +99,25 @@ def parse_vacancy_description(url: str) -> list[str]:
 
 
 def main_job():
-    print("Запуск парсера свежих Java-вакансий...")
+    print(f"[{datetime.datetime.now().replace(microsecond=0)}] Запуск парсера свежих Java-вакансий...")
     collect_java_vacancies()
 
-    print(f"Анализируем файл {RESPONSE_FILENAME}...")
+    print(f"[{datetime.datetime.now().replace(microsecond=0)}] Анализируем файл {RESPONSE_FILENAME}...")
     vacancies = extract_vacancies_from_file(RESPONSE_FILENAME)
 
     if not vacancies:
         print("Вакансии не найдены. Проверьте имя файла или его содержимое.")
         return
 
-    print("Удаляем ранее обработанные вакансии...")
+    print(f"[{datetime.datetime.now().replace(microsecond=0)}] Удаляем ранее обработанные вакансии...")
     vacancies = find_new_vacancies(vacancies)
 
-    print(f"Успешно извлечено вакансий: {len(vacancies)}\n")
+    print(f"[{datetime.datetime.now().replace(microsecond=0)}] Успешно извлечено вакансий: {len(vacancies)}")
     save_all_data(vacancies)
+
+    if not RESUME:
+        print(f"[{datetime.datetime.now().replace(microsecond=0)}] Резюме не загружено. "
+              "Отправка вакансий без анализа LLM моделью")
 
     for vacancy in vacancies:
         try:
@@ -119,11 +127,14 @@ def main_job():
             if len(data) == 0 or (len(data) > 1 and data[1] not in cities):
                 continue
 
-            description = vacancy.get('title', '') + '\n' + data[0]
-            review = analyze_vacancy_local_ollama(RESUME, description, STOP_FACTORS)
-            print(review)
+            if RESUME:
+                description = vacancy.get('title', '') + '\n' + data[0]
+                review = analyze_vacancy_local_ollama(RESUME, description, STOP_FACTORS)
+                print(review)
 
-            if review.get('should_apply', True) and review.get('relevance_percentage', 0) >= 50:
+                if review.get('should_apply', True) and review.get('relevance_percentage', 0) >= 50:
+                    send_message(vacancy.get('title', ''), vacancy.get('url', ''))
+            else:
                 send_message(vacancy.get('title', ''), vacancy.get('url', ''))
 
         except Exception as e:
